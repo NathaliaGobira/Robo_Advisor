@@ -143,16 +143,15 @@ def exibir_resultados(resultado, nome):
         print(f" Gap de calibração: sem gap")
 
     if resultado["restricoes_aplicadas"]:
-        print("f\n Restrições aplcadas:")
+        print(f"\n Restrições aplicadas:")
         for r in resultado["restricoes_aplicadas"]:
-            print(f"{r}")    
+            print(f"    • {r}")    
 
 
     print("=" * 50)
 
 
-#------------------------
-
+#-------------------------
 if __name__ =="__main__":
     from questionario_v1 import coletar_perfil
 
