@@ -1,6 +1,11 @@
 import sqlite3
 import json
 from datetime import date
+from pathlib import Path
+
+# Caminho do banco ancorado na raiz do projeto (uma pasta acima de src/).
+# Assim o banco fica sempre no mesmo lugar, rode de onde rodar.
+DB_PATH = Path(__file__).resolve().parent.parent / "robo_advisor.db"
 
 
 def conectar():
@@ -8,7 +13,7 @@ def conectar():
     Abre a conexão com o banco e retorna o objeto de conexão.
     Sempre feche a conexão após usar: conn.close()
     """
-    conn = sqlite3.connect("robo_advisor.db")
+    conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # permite acessar colunas pelo nome
     return conn
 
@@ -100,7 +105,7 @@ def criar_tabelas():
         -- Por enquanto populada com dados mock.
         CREATE TABLE IF NOT EXISTS fiis_ranking (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            ticker        TEXT    NOT NULL,
+            ticker        TEXT    NOT NULL UNIQUE,   -- UNIQUE: proíbe ticker repetido; é o que faz o INSERT OR IGNORE funcionar
             tipo          TEXT    NOT NULL,
             nota          REAL    NOT NULL,
             dy_anual      REAL,
@@ -322,12 +327,11 @@ def popular_fiis_mock():
 
     conn = conectar()
 
-    # limpa os mocks anteriores antes de reinserir
-    conn.execute("DELETE FROM fiis_ranking")
-
     for fii in FIIS_MOCK:
+        # INSERT OR IGNORE: se o ticker já existe (viola o UNIQUE), o banco
+        # ignora a linha em vez de dar erro. Rodar 2x não duplica.
         conn.execute("""
-            INSERT INTO fiis_ranking (ticker, tipo, nota, dy_anual, atualizado_em)
+            INSERT OR IGNORE INTO fiis_ranking (ticker, tipo, nota, dy_anual, atualizado_em)
             VALUES (?, ?, ?, ?, ?)
         """, (
             fii["ticker"],

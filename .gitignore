@@ -1,0 +1,24 @@
+# ─── Python ───
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# ─── Banco de dados local ───
+# Cada pessoa gera o seu ao rodar `python src/banco.py`. Não versionar.
+*.db
+
+# ─── Ambiente e editor ───
+.vscode/
+.ipynb_checkpoints/
+
+# ─── Dados brutos da CVM (grandes, re-baixáveis do portal da CVM) ───
+FII/
+
+# ─── Arquivos de trabalho pessoal / rascunho (não versionar) ───
+R_A/
+CONTEXT_robo_advisor.md
+sql.sql
+
+# ─── Sistema operacional ───
+.DS_Store
+Thumbs.db

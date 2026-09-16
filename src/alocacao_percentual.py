@@ -1,25 +1,15 @@
 # Recomendação de alocação por percentuais — sem seleção de ativos específicos
+import yaml
+from pathlib import Path
 
-alocacao_base = {
-    "Conservador": {
-        "fii":      0.10,
-        "rf_longo": 0.50,
-        "rf_curto": 0.40,
-        "descricao": "Prioridade em segurança e liquidez.",
-    },
-    "Moderado": {
-        "fii":      0.30,
-        "rf_longo": 0.50,
-        "rf_curto": 0.20,
-        "descricao": "Equilíbrio entre renda e crescimento.",
-    },
-    "Agressivo": {
-        "fii":      0.55,
-        "rf_longo": 0.35,
-        "rf_curto": 0.10,
-        "descricao": "Foco em crescimento patrimonial.",
-    },
-}
+CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "allocation.yaml"
+
+with open(CONFIG_PATH, encoding="utf-8") as arquivo:
+    config = yaml.safe_load(arquivo)
+
+
+alocacao_base = config["perfil"]
+
 
 COMENTARIOS = {
     "fii":      "Fundos imobiliários — renda passiva mensal com maior potencial de valorização.",

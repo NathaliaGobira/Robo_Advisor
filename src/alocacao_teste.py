@@ -1,6 +1,14 @@
+
 # Este código monta a carteira do investidor a partir de dados do perfil
 
 # Os dados usados são mock por enquanto. Os FIIs estão sendo avaliados e os demais são só para teste
+
+import yaml
+from pathlib import Path
+
+# Caminho do config ancorado na raiz do projeto (uma pasta acima de src/).
+# Assim o código acha o YAML de qualquer diretório de onde for executado.
+CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "allocation.yaml"
 
 FIIS = [
     {"ticker": "HGLG11", "tipo": "logistica",  "dy_anual": 0.11, "nota": 9.2},
@@ -24,27 +32,11 @@ RENDA_FIXA = [
 # rf_longo  → renda fixa longo prazo (travado até vencimento)
 # rf_curto  → renda fixa curto prazo / liquidez imediata
 
-alocacao_base = {
-    "Conservador": {
-        "fii":      0.10,
-        "rf_longo": 0.50,
-        "rf_curto": 0.40,
-        "descricao": "Prioridade em segurança e liquidez.",
-    },
-    "Moderado": {
-        "fii":      0.30,
-        "rf_longo": 0.50,
-        "rf_curto": 0.20,
-        "descricao": "Equilíbrio entre renda e crescimento.",
-    },
-    "Agressivo": {
-        "fii":      0.55,
-        "rf_longo": 0.35,
-        "rf_curto": 0.10,
-        "descricao": "Foco em crescimento patrimonial.",
-    },
-}
+with open(CONFIG_PATH, encoding="utf-8") as arquivo:
+    config = yaml.safe_load(arquivo)
 
+
+alocacao_base = config["perfil"]
 
 #  Aplicação de restrições na alocação 
 

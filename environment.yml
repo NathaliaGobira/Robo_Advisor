@@ -1,0 +1,8 @@
+name: robo_advisor
+channels:
+  - defaults
+dependencies:
+  - python=3.13
+  - pyyaml          # leitura do config/allocation.yaml
+  - pandas          # ingestão/tratamento dos dados da CVM (em breve)
+  - numpy           # apoio numérico ao ranking (em breve)
