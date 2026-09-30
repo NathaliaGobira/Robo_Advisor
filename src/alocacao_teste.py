@@ -1,22 +1,13 @@
 
 # Este código monta a carteira do investidor a partir de dados do perfil
 
-# Os dados usados são mock por enquanto. Os FIIs estão sendo avaliados e os demais são só para teste
-
 import yaml
+import banco
 from pathlib import Path
 
 # Caminho do config ancorado na raiz do projeto (uma pasta acima de src/).
 # Assim o código acha o YAML de qualquer diretório de onde for executado.
 CONFIG_PATH = Path(__file__).resolve().parent.parent / "config" / "allocation.yaml"
-
-FIIS = [
-    {"ticker": "HGLG11", "tipo": "logistica",  "dy_anual": 0.11, "nota": 9.2},
-    {"ticker": "KNRI11", "tipo": "hibrido",    "dy_anual": 0.09, "nota": 8.8},
-    {"ticker": "XPML11", "tipo": "shopping",   "dy_anual": 0.10, "nota": 8.5},
-    {"ticker": "BCFF11", "tipo": "fof",        "dy_anual": 0.12, "nota": 8.1},
-    {"ticker": "MXRF11", "tipo": "recebivel",  "dy_anual": 0.13, "nota": 7.9},
-]
 
 RENDA_FIXA = [
     {"nome": "Tesouro IPCA+ 2035",  "tipo": "longo_prazo", "taxa": "IPCA + 6,2%", "liquidez": "no_vencimento"},
@@ -81,16 +72,23 @@ def selecionar_fiis(respostas, valor_fii):
     
     limite = 3 if respostas["experiencia"] == 1 else 5
 
-    top_fiis     = sorted(FIIS, key=lambda x: x["nota"], reverse=True)[:limite]
+    ativos = banco.buscar_ativos()
+    fiis = []
+    
+    for ativo in ativos:
+        if ativo["tipo_ativo"] == "fii":
+            fiis.append(ativo)
+    top_fiis = sorted(fiis, key=lambda x: x["nota"], reverse=True)[:limite]        
     peso_por_fii = round(1 / len(top_fiis), 4)
 
     fiis_selecionados = []
     for fii in top_fiis:
         valor_alocado = valor_fii * peso_por_fii
-        dy_mensal     = valor_alocado * fii["dy_anual"] / 12
+        dy_anual = fii["dados"]["dy_anual"]
+        dy_mensal = valor_alocado * dy_anual / 12
         fiis_selecionados.append({
             "ticker":        fii["ticker"],
-            "tipo":          fii["tipo"],
+            "tipo":          fii["dados"]["segmento"],
             "nota":          fii["nota"],
             "peso":          peso_por_fii,
             "valor":         round(valor_alocado, 2),

@@ -100,19 +100,19 @@ def criar_tabelas():
             FOREIGN KEY (cliente_id) REFERENCES clientes(id)
         );
 
-        -- Tabela 5: fiis_ranking
+        -- Tabela 5: ativos
         -- Alimentada pelo colega com os dados reais dos FIIs.
         -- Por enquanto populada com dados mock.
-        CREATE TABLE IF NOT EXISTS fiis_ranking (
+        CREATE TABLE IF NOT EXISTS ativos (
             id            INTEGER PRIMARY KEY AUTOINCREMENT,
-            ticker        TEXT    NOT NULL UNIQUE,   -- UNIQUE: proíbe ticker repetido; é o que faz o INSERT OR IGNORE funcionar
-            tipo          TEXT    NOT NULL,
-            nota          REAL    NOT NULL,
-            dy_anual      REAL,
-            volatilidade  REAL,
+            ticker        TEXT    NOT NULL UNIQUE,
+            tipo_ativo    TEXT    NOT NULL,        -- 'fii', 'acao', 'renda_fixa'...
+            nome          TEXT,
+            nota          REAL,                    -- aguardando avaliação
+            dados_json    TEXT,                    -- Caracteriticas especificas dos ativos, em JSON
             atualizado_em TEXT    NOT NULL
         );
-
+        
     """)
 
     conn.commit()
@@ -311,18 +311,18 @@ def registrar_evento(cliente_id, tipo, detalhe=None):
 
 # ── FIIS RANKING ──────────────────────────────────────────────
 
-def popular_fiis_mock():
+def popular_ativos_mock():
     """
     Insere os FIIs simulados no banco para testes.
     Quando o colega entregar os dados reais, substituir por:
         popular_fiis_csv("ranking_fiis.csv")
     """
     FIIS_MOCK = [
-        {"ticker": "HGLG11", "tipo": "logistica",  "nota": 9.2, "dy_anual": 0.11},
-        {"ticker": "KNRI11", "tipo": "hibrido",    "nota": 8.8, "dy_anual": 0.09},
-        {"ticker": "XPML11", "tipo": "shopping",   "nota": 8.5, "dy_anual": 0.10},
-        {"ticker": "BCFF11", "tipo": "fof",        "nota": 8.1, "dy_anual": 0.12},
-        {"ticker": "MXRF11", "tipo": "recebivel",  "nota": 7.9, "dy_anual": 0.13},
+        {"ticker": "HGLG11", "nota": 9.2, "dados": {"segmento": "logistica", "dy_anual": 0.11}},
+        {"ticker": "KNRI11", "nota": 8.8, "dados": {"segmento": "hibrido", "dy_anual": 0.09}},
+        {"ticker": "XPML11", "nota": 8.5, "dados": {"segmento": "shopping", "dy_anual": 0.10}},
+        {"ticker": "BCFF11", "nota": 8.1, "dados": {"segmento": "fof", "dy_anual": 0.12}},
+        {"ticker": "MXRF11", "nota": 7.9, "dados": {"segmento": "recebivel", "dy_anual": 0.13}},
     ]
 
     conn = conectar()
@@ -330,33 +330,49 @@ def popular_fiis_mock():
     for fii in FIIS_MOCK:
         # INSERT OR IGNORE: se o ticker já existe (viola o UNIQUE), o banco
         # ignora a linha em vez de dar erro. Rodar 2x não duplica.
-        conn.execute("""
-            INSERT OR IGNORE INTO fiis_ranking (ticker, tipo, nota, dy_anual, atualizado_em)
+        conn.execute ("""
+            INSERT OR IGNORE INTO ativos (ticker, tipo_ativo, nota,
+            dados_json, atualizado_em)
             VALUES (?, ?, ?, ?, ?)
-        """, (
+            """, (
             fii["ticker"],
-            fii["tipo"],
+            "fii",                    
             fii["nota"],
-            fii["dy_anual"],
+            json.dumps(fii["dados"]),  
             date.today().isoformat()
         ))
 
     conn.commit()
     conn.close()
+    
     print(f"✓ {len(FIIS_MOCK)} FIIs mock inseridos no banco.")
 
 
-def buscar_fiis_ranking():
+def buscar_ativos():
     """
     Retorna todos os FIIs do banco ordenados por nota (maior primeiro).
     Usado pela alocação para buscar os dados do banco em vez do mock local.
     """
     conn  = conectar()
     rows  = conn.execute(
-        "SELECT * FROM fiis_ranking ORDER BY nota DESC"
+        "SELECT * FROM ativos ORDER BY nota DESC"
     ).fetchall()
     conn.close()
-    return [dict(row) for row in rows]
+
+    ativos = []
+    for row in rows:
+        ativo = dict(row)      #Transforma a linha em dicionario
+    
+    #Desempacota os dados do arquivo json    
+    
+        if ativo["dados_json"]:
+            ativo["dados"] = json.loads(ativo["dados_json"])
+        else:
+            ativo["dados"] = {}
+
+        ativos.append(ativo)
+
+    return ativos
 
 
 # ── CONSULTAS ÚTEIS ───────────────────────────────────────────
@@ -400,6 +416,6 @@ def historico_cliente(email):
 if __name__ == "__main__":
     print("\nIniciando configuração do banco de dados...")
     criar_tabelas()
-    popular_fiis_mock()
+    popular_ativos_mock()
     print("\n✓ Banco pronto em: robo_advisor.db")
     print("  Próximo passo: python3 main.py\n")
