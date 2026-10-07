@@ -11,12 +11,13 @@ PESOS = {
     "perda_maxima": 2
 }
 
-# Perguntas que medem o comportamento real do investidor têm peso 1.
-# Perguntas de contexto financeiro têm peso 2.
+# Peso 1: situação financeira e experiência (renda, reserva, aporte, objetivo, experiencia).
+# Peso 2: horizonte e reação a perdas (horizonte, tolerancia, perda_maxima).
+
 # Score mínimo = (5*1)*1 + (1*3)*2 = 11
 # Score máximo = (5*3)*1 + (3*3)*2 = 33
 
-def cassificar_score(score):
+def classificar_score(score):
     if score <= 18:
         return "Conservador"
     elif score <= 26:
@@ -101,7 +102,7 @@ def calcular_suitability(resposta):
 
     # Classificar o perfil do investidor aplicando as regras de restrição
 
-    perfil_base = cassificar_score(score)
+    perfil_base = classificar_score(score)
     perfil_final, restricoes = aplica_restricao(perfil_base, resposta)
 
     gap = calcular_distancia(perfil_final, resposta["autopercep"])
