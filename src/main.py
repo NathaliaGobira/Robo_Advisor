@@ -1,19 +1,19 @@
 from questionario_v1  import coletar_perfil
 from suitability      import calcular_suitability, exibir_resultados
-from alocacao_teste   import montar_carteira, exibir_carteira
+from allocation_engine import montar_carteira, exibir_carteira
 from banco            import (
     criar_tabelas,
     salvar_cliente,
     salvar_questionario,
     salvar_carteira,
     registrar_evento,
-    popular_fiis_mock,
+    popular_ativos_mock,
 )
 
 
 def inicializar():
     criar_tabelas()
-    popular_fiis_mock()
+    popular_ativos_mock()
 
 
 # Fluxo principal do programa
