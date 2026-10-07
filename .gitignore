@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *.egg-info/
+.pytest_cache/
 
 # ─── Banco de dados local ───
 # Cada pessoa gera o seu ao rodar `python src/banco.py`. Não versionar.

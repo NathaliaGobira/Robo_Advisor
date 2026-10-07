@@ -6,3 +6,4 @@ dependencies:
   - pyyaml          # leitura do config/allocation.yaml
   - pandas          # ingestão/tratamento dos dados da CVM (em breve)
   - numpy           # apoio numérico ao ranking (em breve)
+  - pytest          # testes automatizados (tests/)
